@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ChatPro · 离线预览</title>
+<style>
+  body{margin:0;background:#f0f3f5;color:#243446;font:16px/1.8 system-ui,"Microsoft YaHei",sans-serif;padding:clamp(24px,7vw,90px)}
+  main{max-width:690px}h1{font-size:clamp(28px,5vw,48px);line-height:1.2;margin:0 0 24px}p{color:#566779}
+  .tag{display:inline-block;color:#285642;background:#dcece2;border-radius:8px;padding:5px 12px;margin-bottom:24px}
+  code{font:14px monospace}button{font:inherit;border:1px solid #7e93a6;background:white;border-radius:8px;padding:8px 14px;cursor:pointer}
+</style>
+<main><div class="tag">本地离线演示</div><h1>历史里能看到的次数，<br>明确地估算。</h1>
+<p>右下角是与安装版相同的 ChatPro 面板。点击“开始自动扫描”，按模拟订阅日期与 prolite 共享每周 50 次的规则，连续自动扫描八条会话。演示等待已缩短，数据不对应你的账号。</p>
+<p>本页的额度接口为空，用来验证仍可按订阅日期推算当前周期。两个模型分别显示用量，合计行显示共享剩余；服务器返回周期时可自动校准。</p>
+<p>本页的所有登录与历史响应都由本地模拟器提供，不会访问 ChatGPT。</p>
+<p id="request-count"></p>
+<button id="rate-limit">模拟下一次请求返回 429</button>
+<button id="reset">重置离线演示</button>
+<button id="new-response">模拟新 Pro 回答完成</button>
+<div id="demo-response"></div></main>
+<script src="src/core.js"></script>
+<script src="src/i18n.js"></script>
+<script>
+  globalThis.CHATPRO_PREVIEW = true;
+  const demoPrefix = 'chatpro-offline:';
+  globalThis.GM_getValue = (key, fallback) => {
+    const value = localStorage.getItem(demoPrefix + key);
+    return value == null ? fallback : JSON.parse(value);
+  };
+  globalThis.GM_setValue = (key, value) => localStorage.setItem(demoPrefix + key, JSON.stringify(value));
+  globalThis.GM_deleteValue = key => localStorage.removeItem(demoPrefix + key);
+  globalThis.GM_registerMenuCommand = () => {};
+  let limited = false;
+  document.getElementById('rate-limit').onclick = () => { limited = true; };
+  document.getElementById('reset').onclick = () => {
+    for (const key of Object.keys(localStorage)) if (key.startsWith(demoPrefix)) localStorage.removeItem(key);
+    location.reload();
+  };
+  const demoId = n => '00000000-0000-4000-8000-' + String(n).padStart(12, '0');
+  const demoSeed = GM_getValue('seed', null) || Date.now();
+  GM_setValue('seed', demoSeed);
+  const demoTime = demoSeed - 3600000;
+  const demoReset = demoSeed - 12 * 3600000;
+  let extraResponses = GM_getValue('extraResponses', []);
+  document.getElementById('new-response').onclick = () => {
+    extraResponses.push(Date.now()); GM_setValue('extraResponses', extraResponses);
+    const answer = document.createElement('p'); answer.dataset.messageAuthorRole = 'assistant';
+    answer.textContent = '模拟 Pro 回答已完成，等待面板自动增量更新。';
+    document.getElementById('demo-response').append(answer);
+  };
+  const counts = GM_getValue('requests', { identity: 0, lists: 0, details: 0, quota: 0 });
+  const showCounts = () => document.getElementById('request-count').textContent =
+    '演示累计请求：账号识别 ' + counts.identity + ' · 历史列表 ' + counts.lists + ' · 会话详情 ' + counts.details + ' · 订阅与额度 ' + counts.quota;
+  showCounts();
+  globalThis.fetch = async function(url, options) {
+    if (!String(url).startsWith('https://chatgpt.com/')) throw new Error('离线演示不允许联网请求。');
+    if (limited) { limited = false; return new Response('{}', { status: 429, headers: { 'Retry-After': '120' } }); }
+    const path = new URL(url);
+    const category = path.pathname === '/api/auth/session' || path.pathname.startsWith('/backend-api/accounts/') ? 'identity' :
+      path.pathname === '/backend-api/conversations' ? 'lists' :
+      path.pathname === '/backend-api/subscriptions' || path.pathname === '/backend-api/conversation/init' ? 'quota' : 'details';
+    counts[category]++; GM_setValue('requests', counts); showCounts();
+    let data;
+    if (path.pathname === '/api/auth/session') data = { user: { id: 'offline-demo-user' }, accessToken: 'offline-demo-token' };
+    else if (path.pathname === '/backend-api/accounts/check/v4-2023-04-27') data = {
+      default_account_id: 'offline-account', accounts: { 'offline-account': { account: { account_id: 'offline-account', plan_type: 'prolite' } } } };
+    else if (path.pathname === '/backend-api/subscriptions') data = { account_id: 'offline-account', plan_type: 'prolite',
+      active_start: demoReset / 1000, active_until: (demoReset + 30 * ChatProCore.DAY) / 1000, billing_period: 'monthly' };
+    else if (path.pathname === '/backend-api/conversation/init') data = {
+      model_limits: [], blocked_features: [], limits_progress: [] };
+    else if (path.pathname === '/backend-api/conversations') data = path.searchParams.get('is_archived') === 'true' ?
+      { items: [], total: 0 } : { items: [
+        ...extraResponses.map((time,index) => ({id:demoId(9+index),update_time:(time+500)/1000})).reverse(),
+        ...[1,2,3,4,5,6,7,8].map(n => ({ id: demoId(n), update_time: (demoTime + 3000 - n) / 1000 }))
+      ], total: 8 + extraResponses.length };
+    else if (path.pathname.startsWith('/backend-api/conversation/')) {
+      const n = Number(path.pathname.slice(-12)), model = n === 3 ? 'gpt-5-6-pro' : 'gpt-6-pro';
+      const turnTime = n >= 9 ? extraResponses[n-9] : demoTime;
+      data = { conversation_id: demoId(n), mapping: {
+        u: { parent: null, message: { id: 'demo-user-' + n, create_time: turnTime / 1000, author: { role: 'user' } } },
+        a: { parent: 'u', message: { create_time: (turnTime + 1000) / 1000, author: { role: 'assistant' },
+          recipient: 'all', channel: 'final', status: 'finished_successfully',
+          content: { content_type: 'text', parts: ['离线演示'] }, metadata: { model_slug: model } } }
+      } };
+    } else throw new Error('未知的离线演示接口。');
+    if (options?.signal?.aborted) throw new DOMException('已暂停', 'AbortError');
+    return new Response(JSON.stringify(data), { headers: { 'Content-Type': 'application/json' } });
+  };
+</script>
+<script src="dist/preview-browser.js"></script>
+</html>

@@ -1,0 +1,16 @@
+{
+  "name": "chatpro-history-estimator",
+  "version": "0.5.1",
+  "private": true,
+  "description": "ChatGPT saved-history usage estimator for Tampermonkey",
+  "license": "AGPL-3.0-only",
+  "engines": { "node": ">=22" },
+  "repository": { "type": "git", "url": "https://github.com/afate123/chatpro.git" },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node --test tests/*.test.cjs",
+    "check": "node --check src/core.js && node --check src/i18n.js && node --check src/browser.js && node --check dist/chatpro.user.js",
+    "build:verify": "node scripts/build.mjs --check",
+    "release:prepare": "node scripts/release.mjs"
+  }
+}

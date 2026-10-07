@@ -1,0 +1,30 @@
+name: Publish tagged beta
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Match tag to package version
+        run: node -e "const p=require('./package.json'); if(process.env.GITHUB_REF_NAME!=='v'+p.version) process.exit(1)"
+      - run: npm test
+      - run: npm run build:verify
+      - run: npm run check
+      - run: npm run release:prepare
+      - name: Publish source tag and release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" release/"$GITHUB_REF_NAME"/* --clobber
+            gh release edit "$GITHUB_REF_NAME" --prerelease --title "ChatPro $GITHUB_REF_NAME (Beta)" --notes-file docs/release-notes.md
+          else
+            gh release create "$GITHUB_REF_NAME" release/"$GITHUB_REF_NAME"/* --verify-tag --prerelease --title "ChatPro $GITHUB_REF_NAME (Beta)" --notes-file docs/release-notes.md
+          fi

@@ -1,0 +1,26 @@
+name: Bug report / 问题反馈
+description: Report behavior without sharing credentials or conversation text.
+body:
+  - type: markdown
+    attributes:
+      value: "Do not upload access tokens, cookies, chat text, or full history. Review diagnostic exports before posting. / 不要上传令牌、Cookie、正文或完整历史；诊断文件发布前先检查。"
+  - type: input
+    id: version
+    attributes: {label: 'ChatPro version / 脚本版本'}
+    validations: {required: true}
+  - type: input
+    id: browser
+    attributes: {label: 'Browser, OS and Tampermonkey versions / 浏览器、系统、油猴版本'}
+    validations: {required: true}
+  - type: dropdown
+    id: plan
+    attributes:
+      label: 'Plan / 套餐'
+      options: ['Pro $100', 'Pro $200 - 100', 'Pro $200 - 200', 'Pro $200 - unknown', 'Pro $500', 'Other / Unknown']
+  - type: textarea
+    id: reproduce
+    attributes: {label: 'Steps, expected and actual behavior / 步骤、预期、实际结果'}
+    validations: {required: true}
+  - type: textarea
+    id: diagnostic
+    attributes: {label: 'Optional redacted diagnostic / 可选脱敏诊断', description: 'Remove accountTag and personal subscription dates as well as any sensitive information.'}

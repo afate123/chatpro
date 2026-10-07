@@ -1,0 +1,13 @@
+node_modules/
+*.log
+artifacts/
+release/
+dist/preview-browser.js
+*.zip
+.env
+.env.*
+chatpro-diagnostic-*.json
+chatpro-estimate-*.json
+docs/local-validation.md
+Thumbs.db
+.DS_Store
