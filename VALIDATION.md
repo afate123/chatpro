@@ -4,8 +4,8 @@
 
 - 82 automated tests passed locally on Node.js 21.7.2. They cover accounting, subscription windows, quota precedence, scheduling, account isolation, request gates, response bounds, export privacy, Pro $200 eligibility boundaries and expiry, locale selection, translation coverage and switching languages with dynamic counts. Public supported runtime/CI targets Node.js 22.
 - Syntax checks and source/distribution consistency passed. All four GitHub workflow/issue YAML files parsed successfully.
-- CI is configured to run tests, syntax checks and source/distribution consistency on Node.js 22 for Windows and Linux. Hosted CI has not run until the repository is uploaded.
-- No new requests were sent to a real ChatGPT account during release preparation. Public installation/update links have not been deployed.
+- GitHub CI passed on Node.js 22 for both Windows and Linux: 82 tests, syntax checks and source/distribution consistency. See [the verified run](https://github.com/afate123/chatpro/actions/runs/37704033257). Repository text uses LF on both platforms; a fresh Windows checkout with automatic line-ending conversion was also verified locally.
+- No new requests were sent to a real ChatGPT account during release preparation. Public installation/update files were deployed and verified against the local build.
 
 ## Offline browser checks
 

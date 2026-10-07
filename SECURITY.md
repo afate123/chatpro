@@ -2,7 +2,7 @@
 
 Supported: latest published Beta. Older versions may contain issues fixed later.
 
-For vulnerabilities involving token disclosure, account isolation, malicious endpoint access, or unsafe updates, use the repository's private vulnerability reporting option if enabled. Do not post secrets in a public issue. If private reporting is unavailable, open an issue containing only a request for a private reporting channel; wait for the maintainer to provide one before sharing sensitive details.
+For vulnerabilities involving token disclosure, account isolation, malicious endpoint access, or unsafe updates, use [private vulnerability reporting](https://github.com/afate123/chatpro/security/advisories/new), which is enabled for this repository. Do not post secrets in a public issue. If private reporting becomes unavailable, open an issue containing only a request for a private reporting channel; wait for the maintainer to provide one before sharing sensitive details.
 
 Maintainer setup: enable GitHub private vulnerability reporting before inviting security reports. No private contact address is invented by this repository.
 

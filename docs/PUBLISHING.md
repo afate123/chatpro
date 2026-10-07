@@ -11,4 +11,4 @@ Public repository: [afate123/chatpro](https://github.com/afate123/chatpro), bran
 
 One-click install and update metadata point to raw main/dist. They work only after those files have been uploaded. Updates follow main, so keep distribution files reviewed and passing CI before merging. A prerelease is not necessarily returned by GitHub's latest-release URL; README intentionally uses the explicit raw install URL.
 
-Local `npm run release:prepare` uses `tar` (included in current Windows and Ubuntu runners) and creates assets only; it never uploads. The source asset uses an explicit public file list, including docs/images/demo.png; ignored local diagnostics and validation notes are excluded. No action here creates a repository or publishes without an explicit publishing request.
+Local `npm run release:prepare` uses `tar` (included in current Windows and Ubuntu runners) and creates assets only; it never uploads. The source asset uses an explicit public file list, including both demo images and .gitattributes; ignored local diagnostics and validation notes are excluded. No action here creates a repository or publishes without an explicit publishing request.
