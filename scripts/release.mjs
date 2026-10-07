@@ -15,7 +15,7 @@ for (const source of files) {
   hashes.push(createHash('sha256').update(await readFile(new URL(source,root))).digest('hex') + '  ' + name);
 }
 // Explicit public inputs keep local diagnostics/backups out of source assets.
-const sourceInputs = ['src','tests','scripts','.github','package.json','release.config.json','.gitignore',
+const sourceInputs = ['src','tests','scripts','.github','package.json','release.config.json','.gitignore','.gitattributes',
   'README.md','README.zh-CN.md','README.es.md','CHANGELOG.md','CONTRIBUTING.md','SECURITY.md','VALIDATION.md','preview.html',
   ...files,'docs/QUOTA_POLICY.md','docs/LIVE_VALIDATION.md','docs/PUBLISHING.md','docs/release-notes.md','docs/images/demo.png','docs/images/demo-es.png'];
 const sourceName = 'chatpro-v' + pkg.version + '-source.tar.gz';
